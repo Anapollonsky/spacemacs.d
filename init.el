@@ -98,6 +98,7 @@ values."
      vlf
      es-mode
      ob-http
+     decide
      )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -369,7 +370,7 @@ you should place your code here."
                                            (executable-find "firefox"))))
 
 
-    (setq browse-url-browser-function 'browse-url-generic)
+    ;; (setq browse-url-browser-function 'browse-url-generic)
 
     ;; no dialog boxes
     (setq use-dialog-box nil)
@@ -437,6 +438,7 @@ you should place your code here."
     (use-package vlf
       :config (require 'vlf-setup))
     (use-package es-mode)
+    (use-package decide)
 
     ;; Undo-Tree
     (setq undo-tree-auto-save-history t)
@@ -691,6 +693,9 @@ you should place your code here."
                                  )
 
                                 ))
+
+    ;; roll dice
+    (evil-leader/set-key "ord" 'decide-roll-dice)
     ))
 
 ;; Do not write anything past this comment. This is where Emacs will
