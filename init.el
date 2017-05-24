@@ -35,7 +35,10 @@ values."
    '(
      helm
      fasd
-     version-control
+     (version-control :variables
+                       version-control-global-margin t
+                       version-control-diff-tool 'diff-hl
+                       version-control-diff-side 'left)
      git
      github
      shell
@@ -45,7 +48,6 @@ values."
      scala
      c-c++
      haskell
-     clojure
      extra-langs
      javascript
      java
@@ -53,12 +55,10 @@ values."
      yaml
      latex
      sql
-     typescript
      vimscript
      html
      regex
      colors
-     perspectives
      auto-completion
      semantic
      syntax-checking
@@ -69,7 +69,6 @@ values."
      speed-reading
      markdown
      games
-     themes-megapack
      puppet
      mu4e
      spacemacs-layouts
@@ -198,6 +197,8 @@ values."
                                  :powerline-scale 1)
      ;; The leader key
      dotspacemacs-leader-key "SPC"
+     ;; The key used for Vim Ex commands (default ":")
+     dotspacemacs-ex-command-key ":"
      ;; The leader key accessible in `emacs state' and `insert state'
      ;; (default "M-m")
      dotspacemacs-emacs-leader-key "M-m"
@@ -628,3 +629,17 @@ you should place your code here."
     ;; roll dice
     (evil-leader/set-key "ord" 'decide-roll-dice)
     ))
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (git-gutter-fringe+ git-gutter-fringe fringe-helper git-gutter+ git-gutter diff-hl ztree zonokai-theme zenburn-theme zen-and-art-theme yapfify yaml-mode xterm-color ws-butler wolfram-mode winum which-key wgrep web-mode web-beautify volatile-highlights vlf visual-regexp-steroids vimrc-mode uuidgen use-package underwater-theme ujelly-theme typo typit twilight-theme twilight-bright-theme twilight-anti-bright-theme tronesque-theme toxi-theme toc-org tide thrift tao-theme tangotango-theme tango-plus-theme tango-2-theme tagedit syslog-mode sx sunny-day-theme sudoku sublime-themes subatomic256-theme subatomic-theme stickyfunc-enhance stan-mode srefactor sql-indent spray spaceline spacegray-theme soothe-theme solarized-theme soft-stone-theme soft-morning-theme soft-charcoal-theme smyx-theme smeargle slim-mode shell-pop seti-theme scss-mode scad-mode sass-mode rvm ruby-tools ruby-test-mode rubocop rspec-mode robe reverse-theme restart-emacs rbenv rake rainbow-mode rainbow-identifiers rainbow-delimiters railscasts-theme qml-mode pyvenv pytest pyenv-mode py-isort purple-haze-theme puppet-mode pug-mode professional-theme popwin planet-theme pip-requirements phoenix-dark-pink-theme phoenix-dark-mono-theme persp-mode pdf-tools pastels-on-dark-theme paradox pandoc-mode pacmacs ox-pandoc orgit organic-green-theme org-projectile org-present org-pomodoro org-download org-bullets open-junk-file omtose-phellack-theme oldlace-theme occidental-theme obsidian-theme ob-ipython ob-http noflet noctilux-theme niflheim-theme neotree naquadah-theme mustang-theme multi-term mu4e-maildirs-extension mu4e-alert move-text monokai-theme monochrome-theme molokai-theme moe-theme mmm-mode minitest minimal-theme matlab-mode material-theme markdown-toc majapahit-theme magit-gitflow magit-gh-pulls madhat2r-theme macrostep lush-theme lorem-ipsum log4j-mode livid-mode live-py-mode linum-relative link-hint light-soap-theme less-css-mode julia-mode json-mode js2-refactor js-doc jbeans-theme jazz-theme ir-black-theme intero inkpot-theme info+ indent-guide ibuffer-projectile hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-tail highlight-parentheses highlight-numbers highlight-indentation hide-comnt heroku-theme hemisu-theme help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag hc-zenburn-theme haskell-snippets gruvbox-theme gruber-darker-theme groovy-mode grandshell-theme gotham-theme google-translate golden-ratio gnuplot github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link gist gh-md ggtags gandalf-theme fuzzy flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido flatui-theme flatland-theme fireplace firebelly-theme fill-column-indicator fasd farmhouse-theme fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu espresso-theme eshell-z eshell-prompt-extras esh-help es-mode ensime emmet-mode elisp-slime-nav dumb-jump dracula-theme django-theme disaster define-word decide darktooth-theme darkokai-theme darkmine-theme darkburn-theme dakrone-theme dactyl-mode cython-mode cyberpunk-theme csv-mode company-web company-tern company-statistics company-ghci company-ghc company-emacs-eclim company-cabal company-c-headers company-auctex company-anaconda command-log-mode column-enforce-mode color-theme-sanityinc-tomorrow color-theme-sanityinc-solarized color-identifiers-mode coffee-mode cmm-mode cmake-mode clues-theme clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby cherry-blossom-theme busybee-theme bundler bubbleberry-theme birds-of-paradise-plus-theme badwolf-theme auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile arduino-mode apropospriate-theme anti-zenburn-theme ample-zen-theme ample-theme alect-themes aggressive-indent ag afternoon-theme adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell 2048-game))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
