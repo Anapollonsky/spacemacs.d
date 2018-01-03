@@ -54,6 +54,7 @@ values."
      (clojure :variables clojure-enable-fancify-symbols t)
      emacs-lisp
      yaml
+     ipython-notebook
      latex
      sql
      vimscript
@@ -70,7 +71,7 @@ values."
      spell-checking
      spacemacs-layouts
      speed-reading
-     markdown
+     (markdown :variables markdown-live-preview-engine 'vmd)
      games
      puppet
      mu4e
@@ -91,7 +92,6 @@ values."
      groovy-mode
      ag
      ob-ipython
-     syslog-mode
      all-the-icons-dired
      log4j-mode
      fireplace
@@ -104,6 +104,10 @@ values."
      decide
      evil-goggles
      all-the-icons
+     parinfer
+     ob-async
+     dockerfile-mode
+     format-sql
      )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -364,6 +368,9 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (progn
+    ;; bugfix
+    (require 'helm-bookmark)
+
     ;; identification
     (setf user-full-name "Andrew Apollonsky")
     (setf user-mail-address "Anapollonsky@gmail.com")
@@ -417,27 +424,6 @@ you should place your code here."
             search-ring
             regexp-search-ring))
 
-    ;; whitespace
-    ;; (when (display-graphic-p) (spacemacs/toggle-whitespace-globally))
-    ;; (setq whitespace-style
-    ;;       '(face tabs spaces newline space-mark tab-mark newline-mark indentation space-after-tab space-before-tab))
-    ;; (setq whitespace-display-mappings
-    ;;       '(
-    ;;         (space-mark 32 [183] [46]) ; normal space
-    ;;         (newline-mark 10 [182 10]) ; newline
-    ;;         (tab-mark 9 [9655 9] [92 9]) ; tab
-    ;;         ))
-    ;; (setq whitespace-display-mappings '(
-    ;;                                     (space-mark   ?\     [?\u00B7]     [?.])
-    ;;                                     (space-mark   ?\xA0  [?\u00A4]     [?_])
-    ;;                                     (newline-mark ?\n    [?¶ ?\n])
-    ;;                                     (tab-mark     ?\t    [?\u00BB ?\t] [?\\ ?\t])
-    ;; ))
-
-    ;; (when (display-graphic-p) (spacemacs/toggle-whitespace-globally))
-    ;; (set-face-foreground 'whitespace-space "#282828") ;; Something is messing this up, changing it to theme orange
-
-
     ;; Configure additional packages
     (use-package wgrep)
     (use-package groovy-mode)
@@ -459,19 +445,30 @@ you should place your code here."
     (evil-leader/set-key "fF" 'spacemacs/sudo-edit)
 
     ;; org-babel
+    (require 'ob-sh)
+    (require 'ob-scala)
+    (require 'ob-async)
     (org-babel-do-load-languages ;; Parse babel blocks for these languages
      'org-babel-load-languages
      '((C . t)
        (java . t)
        (haskell . t)
        (python . t)
+       (scala . t)
        (lisp . t)
        (latex . t)
+       (ipython . t)
        (sh . t)
+       (shell . t)
+       (ein . t)
        (elasticsearch . t)
        (http . t)
        (sql . t)))
-    
+
+    (setq org-confirm-babel-evaluate nil)
+       ;; display/update images in the buffer after I evaluate
+    (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+
     (setq org-src-fontify-natively t)
     (add-to-list 'org-latex-packages-alist '("" "minted")) ;; Add minted to the defaults packages to include when exporting.
     (setq org-latex-listings 'minted)  ;; Tell the latex export to use the minted package for source code coloration.
@@ -527,17 +524,17 @@ you should place your code here."
     (spacemacs/toggle-highlight-indentation-on)
     (spacemacs/toggle-syntax-checking-on)
     (spacemacs/toggle-spelling-checking-on)
-    (spacemacs/toggle-semantic-stickyfunc-globally-on)
+    ;; (spacemacs/toggle-semantic-stickyfunc-globally-on)
     (spacemacs/toggle-smartparens-globally-on)
     (spacemacs/toggle-camel-case-motion-globally-on)
     (global-auto-complete-mode 0)
     (global-company-mode 1)
     (evil-goggles-mode 1)
-    
+
     ;; evil
     (setq evil-goggles-duration 0.08)
     (evil-goggles-use-diff-faces)
-    
+
     ;; indent guide
     (setq indent-guide-recursive t
           indent-guide-char "┊")
@@ -572,54 +569,6 @@ you should place your code here."
                       (get-char-property (point) 'face))))
         (if face (message "Face: %s" face) (message "No face at %d" pos))))
 
-    ;; Send email
-    (setq send-mail-function 'smtpmail-send-it)
-    (setq smtpmail-stream-type 'ssl)
-    (setq smtpmail-smtp-server "smtp.gmail.com")
-    (setq smtpmail-smtp-service 465)
-
-    ;; mu4e
-    (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
-
-    (setq mu4e-maildir "~/.mail"
-          mu4e-trash-folder "/Trash"
-          mu4e-refile-folder "/Archive"
-          mu4e-get-mail-command "mbsync -a"
-          mu4e-compose-signature "Andrew Apollonsky"
-          mu4e-get-mail-command "mbsync gmail"
-          mu4e-update-interval nil
-          mu4e-compose-signature-auto-include nil
-          mu4e-view-show-images t
-          mu4e-view-show-addresses t
-          mu4e-headers-skip-duplicates t)
-
-    (setq mu4e-maildir-shortcuts
-          '(("/gmail/INBOX" . ?g)
-            ("/yodle/INBOX" . ?y)))
-
-    ;; ;; Bookmarks
-    ;; (setq mu4e-bookmarks
-    ;;       `(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
-    ;;         ("date:today..now" "Today's messages" ?t)
-    ;;         ("date:7d..now" "Last 7 days" ?w)
-    ;;         ("mime:image/*" "Messages with images" ?p)
-    ;;         (,(mapconcat 'identity
-    ;;                      (mapcar
-    ;;                       (lambda (maildir)
-    ;;                         (concat "maildir:" (car maildir)))
-    ;;                       mu4e-maildir-shortcuts) " OR ")
-    ;;          "All inboxes" ?i)))
-
-    (setq mu4e-account-alist
-          '(("gmail"
-             ;; Under each account, set the account-specific variables you want.
-             (mu4e-sent-messages-behavior delete)
-             (mu4e-sent-folder "/gmail/.Sent_Mail")
-             (mu4e-drafts-folder "/gmail/.Drafts")
-             (user-mail-address "anapollonsky@gmail.com")
-             (user-full-name "Andrew Apollonsky"))))
-    (mu4e/mail-account-reset)
-
     ;; ztree
     (evil-leader/set-key "ozt" 'ztree-dir)
     (evil-leader/set-key "ozd" 'ztree-diff)
@@ -631,9 +580,10 @@ you should place your code here."
     ;; scala
     (setq flycheck-scalastyle-jar "usr/bin/scalastyle")
     (setq-default dotspacemacs-configuration-layers '(
-                                                      (scala :variables scala-enable-eldoc-mode t)
-                                                      (scala :variables scala-auto-insert-asterisk-in-comments t)))
-    
+                                                      (scala :variables scala-enable-eldoc t)
+                                                      (scala :variables scala-auto-insert-asterisk-in-comments t)
+                                                      (scala :variables scala-auto-start-ensime)))
+
 
     ;; clojure
     (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
@@ -643,7 +593,7 @@ you should place your code here."
     (defun cider-projectile-load-project ()
       "Load all clojure files in projectile project"
       (interactive)
-      (cider-load-all-files (projectile-project-root)))
+      (cider-load-all-files (concat (projectile-project-root) "/src")))
     (spacemacs/set-leader-keys-for-major-mode 'clojure-mode  "ep" 'cider-projectile-load-project)
 
     (defun cider-quick-connect ()
@@ -652,10 +602,32 @@ you should place your code here."
       (cider-connect "localhost" "4005" (projectile-project-root)))
     (spacemacs/set-leader-keys-for-major-mode 'clojure-mode  "sd" 'cider-quick-connect)
 
+    ;; sql parse (depends on sql-parse pip package)
+    (defun sqlparse-region (beg end)
+      (interactive "r")
+      (shell-command-on-region
+       beg end
+       "python -c 'import sys, sqlparse; print(sqlparse.format(sys.stdin.read(), reindent=True))'"
+       t t))
+
+    ;; (defun sql-beautify-region (beg end)
+    ;;   "Beautify SQL in region between beg and END."
+    ;;   (interactive "r")
+    ;;   (save-excursion
+    ;;     (shell-command-on-region beg end "sqlbeautify" nil t)))
+    ;; ;; change sqlbeautify to anbt-sql-formatter if you
+    ;; ;;ended up using the ruby gem
+
+    ;; (defun sql-beautify-buffer ()
+    ;;   "Beautify SQL in buffer."
+    ;;   (interactive)
+    ;;   (sql-beautify-region (point-min) (point-max)))
 
     ;; roll dice
     (evil-leader/set-key "ord" 'decide-roll-dice)))
-    
+
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
