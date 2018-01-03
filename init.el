@@ -46,7 +46,9 @@ values."
      pandoc
      python
      scala
-     c-c++
+     (c-c++ :variables
+            c-c++-default-mode-for-headers 'c++-mode
+            c-c++-enable-clang-support t)
      haskell
      extra-langs
      javascript
@@ -54,6 +56,7 @@ values."
      (clojure :variables clojure-enable-fancify-symbols t)
      emacs-lisp
      yaml
+     ipython-notebook
      latex
      sql
      vimscript
@@ -67,10 +70,9 @@ values."
      syntax-checking
      org
      ibuffer
-     spell-checking
      spacemacs-layouts
      speed-reading
-     markdown
+     (markdown :variables markdown-live-preview-engine 'vmd)
      games
      puppet
      mu4e
@@ -87,11 +89,13 @@ values."
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages
    '(
+     rtags
+     company-rtags
+     flycheck-rtags
      wgrep
      groovy-mode
      ag
      ob-ipython
-     syslog-mode
      all-the-icons-dired
      log4j-mode
      fireplace
@@ -104,6 +108,10 @@ values."
      decide
      evil-goggles
      all-the-icons
+     parinfer
+     ob-async
+     dockerfile-mode
+     format-sql
      )
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
@@ -354,7 +362,8 @@ executes.
  This function is mostly useful for variables that need to be set
 before packages are loaded. If you are unsure, you should try in setting them in
 `dotspacemacs/user-config' first."
-  )
+    (push '("melpa-stable" . "stable.melpa.org/packages/") configuration-layer--elpa-archives)
+    (push '("ensime" . "melpa-stable") package-pinned-packages))
 
 (defun dotspacemacs/user-config ()
   "Configuration function for user code.
@@ -364,6 +373,9 @@ This is the place where most of your configurations should be done. Unless it is
 explicitly specified that a variable should be set before a package is loaded,
 you should place your code here."
   (progn
+    ;; bugfix
+    (require 'helm-bookmark)
+
     ;; identification
     (setf user-full-name "Andrew Apollonsky")
     (setf user-mail-address "Anapollonsky@gmail.com")
@@ -417,27 +429,6 @@ you should place your code here."
             search-ring
             regexp-search-ring))
 
-    ;; whitespace
-    ;; (when (display-graphic-p) (spacemacs/toggle-whitespace-globally))
-    ;; (setq whitespace-style
-    ;;       '(face tabs spaces newline space-mark tab-mark newline-mark indentation space-after-tab space-before-tab))
-    ;; (setq whitespace-display-mappings
-    ;;       '(
-    ;;         (space-mark 32 [183] [46]) ; normal space
-    ;;         (newline-mark 10 [182 10]) ; newline
-    ;;         (tab-mark 9 [9655 9] [92 9]) ; tab
-    ;;         ))
-    ;; (setq whitespace-display-mappings '(
-    ;;                                     (space-mark   ?\     [?\u00B7]     [?.])
-    ;;                                     (space-mark   ?\xA0  [?\u00A4]     [?_])
-    ;;                                     (newline-mark ?\n    [?¶ ?\n])
-    ;;                                     (tab-mark     ?\t    [?\u00BB ?\t] [?\\ ?\t])
-    ;; ))
-
-    ;; (when (display-graphic-p) (spacemacs/toggle-whitespace-globally))
-    ;; (set-face-foreground 'whitespace-space "#282828") ;; Something is messing this up, changing it to theme orange
-
-
     ;; Configure additional packages
     (use-package wgrep)
     (use-package groovy-mode)
@@ -459,19 +450,30 @@ you should place your code here."
     (evil-leader/set-key "fF" 'spacemacs/sudo-edit)
 
     ;; org-babel
+    (require 'ob-sh)
+    (require 'ob-scala)
+    (require 'ob-async)
     (org-babel-do-load-languages ;; Parse babel blocks for these languages
      'org-babel-load-languages
      '((C . t)
        (java . t)
        (haskell . t)
        (python . t)
+       (scala . t)
        (lisp . t)
        (latex . t)
+       (ipython . t)
        (sh . t)
+       (shell . t)
+       (ein . t)
        (elasticsearch . t)
        (http . t)
        (sql . t)))
-    
+
+    (setq org-confirm-babel-evaluate nil)
+       ;; display/update images in the buffer after I evaluate
+    (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
+
     (setq org-src-fontify-natively t)
     (add-to-list 'org-latex-packages-alist '("" "minted")) ;; Add minted to the defaults packages to include when exporting.
     (setq org-latex-listings 'minted)  ;; Tell the latex export to use the minted package for source code coloration.
@@ -511,10 +513,6 @@ you should place your code here."
     ;; highlight matching delimiter
     (highlight-parentheses-mode 1)
 
-    ;; Replace insert with emacs state
-    ;; (spacemacs/toggle-hybrid-mode-on)
-
-
     ;; fonts
     (use-package all-the-icons)
     (setq neo-theme 'icons)
@@ -526,18 +524,16 @@ you should place your code here."
     (spacemacs/toggle-automatic-symbol-highlight-on)
     (spacemacs/toggle-highlight-indentation-on)
     (spacemacs/toggle-syntax-checking-on)
-    (spacemacs/toggle-spelling-checking-on)
-    (spacemacs/toggle-semantic-stickyfunc-globally-on)
     (spacemacs/toggle-smartparens-globally-on)
     (spacemacs/toggle-camel-case-motion-globally-on)
     (global-auto-complete-mode 0)
     (global-company-mode 1)
     (evil-goggles-mode 1)
-    
+
     ;; evil
     (setq evil-goggles-duration 0.08)
     (evil-goggles-use-diff-faces)
-    
+
     ;; indent guide
     (setq indent-guide-recursive t
           indent-guide-char "┊")
@@ -572,54 +568,6 @@ you should place your code here."
                       (get-char-property (point) 'face))))
         (if face (message "Face: %s" face) (message "No face at %d" pos))))
 
-    ;; Send email
-    (setq send-mail-function 'smtpmail-send-it)
-    (setq smtpmail-stream-type 'ssl)
-    (setq smtpmail-smtp-server "smtp.gmail.com")
-    (setq smtpmail-smtp-service 465)
-
-    ;; mu4e
-    (add-to-list 'load-path "/usr/share/emacs/site-lisp/mu4e")
-
-    (setq mu4e-maildir "~/.mail"
-          mu4e-trash-folder "/Trash"
-          mu4e-refile-folder "/Archive"
-          mu4e-get-mail-command "mbsync -a"
-          mu4e-compose-signature "Andrew Apollonsky"
-          mu4e-get-mail-command "mbsync gmail"
-          mu4e-update-interval nil
-          mu4e-compose-signature-auto-include nil
-          mu4e-view-show-images t
-          mu4e-view-show-addresses t
-          mu4e-headers-skip-duplicates t)
-
-    (setq mu4e-maildir-shortcuts
-          '(("/gmail/INBOX" . ?g)
-            ("/yodle/INBOX" . ?y)))
-
-    ;; ;; Bookmarks
-    ;; (setq mu4e-bookmarks
-    ;;       `(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
-    ;;         ("date:today..now" "Today's messages" ?t)
-    ;;         ("date:7d..now" "Last 7 days" ?w)
-    ;;         ("mime:image/*" "Messages with images" ?p)
-    ;;         (,(mapconcat 'identity
-    ;;                      (mapcar
-    ;;                       (lambda (maildir)
-    ;;                         (concat "maildir:" (car maildir)))
-    ;;                       mu4e-maildir-shortcuts) " OR ")
-    ;;          "All inboxes" ?i)))
-
-    (setq mu4e-account-alist
-          '(("gmail"
-             ;; Under each account, set the account-specific variables you want.
-             (mu4e-sent-messages-behavior delete)
-             (mu4e-sent-folder "/gmail/.Sent_Mail")
-             (mu4e-drafts-folder "/gmail/.Drafts")
-             (user-mail-address "anapollonsky@gmail.com")
-             (user-full-name "Andrew Apollonsky"))))
-    (mu4e/mail-account-reset)
-
     ;; ztree
     (evil-leader/set-key "ozt" 'ztree-dir)
     (evil-leader/set-key "ozd" 'ztree-diff)
@@ -631,9 +579,10 @@ you should place your code here."
     ;; scala
     (setq flycheck-scalastyle-jar "usr/bin/scalastyle")
     (setq-default dotspacemacs-configuration-layers '(
-                                                      (scala :variables scala-enable-eldoc-mode t)
-                                                      (scala :variables scala-auto-insert-asterisk-in-comments t)))
-    
+                                                      (scala :variables scala-enable-eldoc t)
+                                                      (scala :variables scala-auto-insert-asterisk-in-comments t)
+                                                      (scala :variables scala-auto-start-ensime)))
+
 
     ;; clojure
     (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
@@ -643,7 +592,7 @@ you should place your code here."
     (defun cider-projectile-load-project ()
       "Load all clojure files in projectile project"
       (interactive)
-      (cider-load-all-files (projectile-project-root)))
+      (cider-load-all-files (concat (projectile-project-root) "/src")))
     (spacemacs/set-leader-keys-for-major-mode 'clojure-mode  "ep" 'cider-projectile-load-project)
 
     (defun cider-quick-connect ()
@@ -652,10 +601,56 @@ you should place your code here."
       (cider-connect "localhost" "4005" (projectile-project-root)))
     (spacemacs/set-leader-keys-for-major-mode 'clojure-mode  "sd" 'cider-quick-connect)
 
+    ;; switch to minibuffer
+    (defun switch-to-minibuffer-window ()
+      "switch to minibuffer window (if active)"
+      (interactive)
+      (when (active-minibuffer-window)
+        (select-frame-set-input-focus (window-frame (active-minibuffer-window)))
+        (select-window (active-minibuffer-window))))
+    (global-set-key (kbd "<f7>") 'switch-to-minibuffer-window)
+
+    ;; sql parse (depends on sql-parse pip package)
+    (defun sqlparse-region (beg end)
+      (interactive "r")
+      (shell-command-on-region
+       beg end
+       "python -c 'import sys, sqlparse; print(sqlparse.format(sys.stdin.read(), reindent=True))'"
+       t t))
+
+    (defun run-bq-query (beg end)
+      (interactive "r")
+      (shell-command-on-region
+       beg end
+       "python ~/personal/scr/python/run-bq-query.py"
+       nil))
+
+    ;; (defun get-bigquery-schema (beg end)
+    ;;   (interactive "r")
+    ;;   (shell-command-on-region
+    ;;    beg end
+    ;;    "python -c 'import"
+    ;;    nil))
+
+
+    ;; (defun sql-beautify-region (beg end)
+    ;;   "Beautify SQL in region between beg and END."
+    ;;   (interactive "r")
+    ;;   (save-excursion
+    ;;     (shell-command-on-region beg end "sqlbeautify" nil t)))
+    ;; ;; change sqlbeautify to anbt-sql-formatter if you
+    ;; ;;ended up using the ruby gem
+
+    ;; (defun sql-beautify-buffer ()
+    ;;   "Beautify SQL in buffer."
+    ;;   (interactive)
+    ;;   (sql-beautify-region (point-min) (point-max)))
 
     ;; roll dice
     (evil-leader/set-key "ord" 'decide-roll-dice)))
-    
+
+
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -663,12 +658,15 @@ you should place your code here."
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (all-the-icons-dired all-the-icons parinfer evil-goggles company-quickhelp clojure-snippets clj-refactor inflections edn paredit peg cider-eval-sexp-fu cider queue clojure-mode ztree zenburn-theme yapfify yaml-mode xterm-color ws-butler wolfram-mode winum which-key wgrep web-mode web-beautify volatile-highlights vlf visual-regexp-steroids vimrc-mode uuidgen use-package typo typit toc-org thrift tagedit syslog-mode sx sudoku stickyfunc-enhance stan-mode srefactor sql-indent spray spaceline solarized-theme smeargle slim-mode shell-pop scss-mode scad-mode sass-mode rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-mode rainbow-identifiers rainbow-delimiters qml-mode pyvenv pytest pyenv-mode py-isort puppet-mode pug-mode popwin pip-requirements persp-mode pdf-tools paradox pandoc-mode pacmacs ox-pandoc orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file ob-ipython ob-http noflet neotree multi-term mu4e-maildirs-extension mu4e-alert move-text monokai-theme mmm-mode minitest matlab-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum log4j-mode livid-mode live-py-mode linum-relative link-hint less-css-mode julia-mode json-mode js2-refactor js-doc intero info+ indent-guide ibuffer-projectile hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-tail highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haskell-snippets groovy-mode google-translate golden-ratio gnuplot github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md ggtags fuzzy flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido fireplace fill-column-indicator fasd fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help es-mode ensime emmet-mode elisp-slime-nav dumb-jump disaster diff-hl define-word decide dactyl-mode cython-mode csv-mode company-web company-tern company-statistics company-ghci company-ghc company-emacs-eclim company-cabal company-c-headers company-auctex company-anaconda command-log-mode column-enforce-mode color-identifiers-mode coffee-mode cmm-mode cmake-mode clean-aindent-mode clang-format chruby bundler auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile arduino-mode aggressive-indent ag adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell 2048-game))))
+    (flycheck-rtags company-rtags rtags format-sql visual-regexp mmt powerline tablist pcre2el org-category-capture ob-ipython org-plus-contrib alert log4e gntp markdown-mode json-snatcher json-reformat parent-mode projectile haml-mode gitignore-mode fringe-helper git-gutter+ git-gutter gh marshal logito pcache ht flyspell-correct flycheck flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg undo-tree spark sbt-mode scala-mode skewer-mode request js2-mode simple-httpd diminish web-completion-data dash-functional tern pos-tip ghc haskell-mode eclim company hydra inflections edn multiple-cursors paredit peg eval-sexp-fu highlight cider seq spinner queue pkg-info clojure-mode epl inf-ruby bind-map bind-key yasnippet packed auctex anaconda-mode pythonic f all-the-icons memoize font-lock+ s dash helm avy helm-core async auto-complete popup dockerfile-mode ob-async ein request-deferred websocket deferred auctex-latexmk ztree yapfify yaml-mode xterm-color ws-butler winum which-key wgrep web-mode web-beautify volatile-highlights vmd-mode vlf visual-regexp-steroids vimrc-mode uuidgen use-package typo typit toc-org thrift tagedit sx sudoku stickyfunc-enhance stan-mode srefactor sql-indent spray spaceline smeargle slim-mode shell-pop scss-mode scad-mode sass-mode rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-mode rainbow-identifiers rainbow-delimiters qml-mode pyvenv pytest pyenv-mode py-isort puppet-mode pug-mode popwin pip-requirements persp-mode pdf-tools parinfer paradox pandoc-mode pacmacs ox-pandoc orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file ob-http noflet neotree multi-term mu4e-maildirs-extension mu4e-alert move-text mmm-mode minitest matlab-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum log4j-mode livid-mode live-py-mode linum-relative link-hint less-css-mode julia-mode json-mode js2-refactor js-doc intero info+ indent-guide ibuffer-projectile hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-tail highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haskell-snippets groovy-mode google-translate golden-ratio gnuplot github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md ggtags fuzzy flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido fireplace fill-column-indicator fasd fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-args evil-anzu eshell-z eshell-prompt-extras esh-help es-mode ensime emmet-mode elisp-slime-nav dumb-jump disaster diff-hl define-word decide dactyl-mode cython-mode csv-mode company-web company-tern company-statistics company-quickhelp company-ghci company-ghc company-emacs-eclim company-cabal company-c-headers company-auctex company-anaconda command-log-mode column-enforce-mode color-identifiers-mode coffee-mode cmm-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile arduino-mode all-the-icons-dired aggressive-indent ag adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell 2048-game))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(evil-goggles-delete-face ((t (:inherit (quote diff-removed)))))
- '(evil-goggles-paste-face ((t (:inherit (quote diff-added)))))
- '(evil-goggles-yank-face ((t (:inherit (quote diff-changed))))))
+ '(evil-goggles-delete-face ((t (:inherit diff-removed))))
+ '(evil-goggles-paste-face ((t (:inherit diff-added))))
+ '(evil-goggles-undo-redo-add-face ((t (:inherit diff-added))))
+ '(evil-goggles-undo-redo-change-face ((t (:inherit diff-changed))))
+ '(evil-goggles-undo-redo-remove-face ((t (:inherit diff-removed))))
+ '(evil-goggles-yank-face ((t (:inherit diff-changed)))))
