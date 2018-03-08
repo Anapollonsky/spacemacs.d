@@ -101,7 +101,6 @@ values."
      fireplace
      csv-mode
      thrift
-     highlight-tail
      vlf
      es-mode
      ob-http
@@ -481,17 +480,18 @@ you should place your code here."
           '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
 
     ;; org-capture
-    (setq org-directory "~/org")
-    (setq org-default-notes-file (concat org-directory "/notes.org"))
     (evil-leader/set-key "ooc" 'org-capture)
+    (setq org-directory "~/org")
+    (setq org-default-notes-file "~/org/refile.org")
     (setq org-capture-templates
-          '(("t" "Todo" entry (file+headline (concat org-directory "/notes.org") "Tasks")
-             "** TODO %?\n %i\n")
-            ("l" "Link" plain (file+headline (concat org-directory "/notes.org") "Links")
-             "- %?\n %x\n")
-            ("q" "Quick Note" plain (file+headline (concat org-directory "/notes.org") "Quick Notes")
-             "+ %?\n %i\n")))
-    (setq org-agenda-files '("~/org/agenda.org" "~/org/notes.org"))
+          '(("t" "todo" entry (file "~/org/todo.org") "* TODO %?\n%U\n%a\n" :clock-in t :clock-resume t)
+            ("b" "bigquery" plain (file "~/org/bigquery.org")
+             "* %?\n#+BEGIN_SRC sql\n#+END_SRC\n")
+            ("n" "note" entry (file "~/org/refile.org")
+             "* %? :NOTE:\n%U\n%a\n" :clock-in t :clock-resume t)
+            ))
+
+    (setq org-agenda-files '("~/org/todo.org" "~/org/bigquery.org" "~/org/shell.org" "~/org/notes.org"))
     (evil-leader/set-key "ofl" 'delete-blank-lines)
 
     ;; mark navigation
@@ -507,18 +507,14 @@ you should place your code here."
     ;; fireplace
     (evil-leader/set-key "ofr" 'fireplace)
 
-    ;; colored parenthesis
-    (rainbow-delimiters-mode 1)
-
-    ;; highlight matching delimiter
-    (highlight-parentheses-mode 1)
-
     ;; fonts
     (use-package all-the-icons)
     (setq neo-theme 'icons)
     (add-hook 'dired-mode-hook 'all-the-icons-dired-mode)
 
     ;; misc
+    (rainbow-delimiters-mode 1)
+    (highlight-parentheses-mode 1)
     (spacemacs/toggle-hungry-delete-on)
     (spacemacs/toggle-centered-point-globally-on)
     (spacemacs/toggle-automatic-symbol-highlight-on)
@@ -648,25 +644,3 @@ you should place your code here."
 
     ;; roll dice
     (evil-leader/set-key "ord" 'decide-roll-dice)))
-
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (flycheck-rtags company-rtags rtags format-sql visual-regexp mmt powerline tablist pcre2el org-category-capture ob-ipython org-plus-contrib alert log4e gntp markdown-mode json-snatcher json-reformat parent-mode projectile haml-mode gitignore-mode fringe-helper git-gutter+ git-gutter gh marshal logito pcache ht flyspell-correct flycheck flx magit magit-popup git-commit with-editor smartparens iedit anzu evil goto-chg undo-tree spark sbt-mode scala-mode skewer-mode request js2-mode simple-httpd diminish web-completion-data dash-functional tern pos-tip ghc haskell-mode eclim company hydra inflections edn multiple-cursors paredit peg eval-sexp-fu highlight cider seq spinner queue pkg-info clojure-mode epl inf-ruby bind-map bind-key yasnippet packed auctex anaconda-mode pythonic f all-the-icons memoize font-lock+ s dash helm avy helm-core async auto-complete popup dockerfile-mode ob-async ein request-deferred websocket deferred auctex-latexmk ztree yapfify yaml-mode xterm-color ws-butler winum which-key wgrep web-mode web-beautify volatile-highlights vmd-mode vlf visual-regexp-steroids vimrc-mode uuidgen use-package typo typit toc-org thrift tagedit sx sudoku stickyfunc-enhance stan-mode srefactor sql-indent spray spaceline smeargle slim-mode shell-pop scss-mode scad-mode sass-mode rvm ruby-tools ruby-test-mode rubocop rspec-mode robe restart-emacs rbenv rake rainbow-mode rainbow-identifiers rainbow-delimiters qml-mode pyvenv pytest pyenv-mode py-isort puppet-mode pug-mode popwin pip-requirements persp-mode pdf-tools parinfer paradox pandoc-mode pacmacs ox-pandoc orgit org-projectile org-present org-pomodoro org-download org-bullets open-junk-file ob-http noflet neotree multi-term mu4e-maildirs-extension mu4e-alert move-text mmm-mode minitest matlab-mode markdown-toc magit-gitflow magit-gh-pulls macrostep lorem-ipsum log4j-mode livid-mode live-py-mode linum-relative link-hint less-css-mode julia-mode json-mode js2-refactor js-doc intero info+ indent-guide ibuffer-projectile hy-mode hungry-delete htmlize hlint-refactor hl-todo hindent highlight-tail highlight-parentheses highlight-numbers highlight-indentation hide-comnt help-fns+ helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-hoogle helm-gtags helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag haskell-snippets groovy-mode google-translate golden-ratio gnuplot github-search github-clone github-browse-file gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gist gh-md ggtags fuzzy flyspell-correct-helm flycheck-pos-tip flycheck-haskell flx-ido fireplace fill-column-indicator fasd fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-goggles evil-exchange evil-escape evil-ediff evil-args evil-anzu eshell-z eshell-prompt-extras esh-help es-mode ensime emmet-mode elisp-slime-nav dumb-jump disaster diff-hl define-word decide dactyl-mode cython-mode csv-mode company-web company-tern company-statistics company-quickhelp company-ghci company-ghc company-emacs-eclim company-cabal company-c-headers company-auctex company-anaconda command-log-mode column-enforce-mode color-identifiers-mode coffee-mode cmm-mode cmake-mode clojure-snippets clj-refactor clean-aindent-mode clang-format cider-eval-sexp-fu chruby bundler auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile arduino-mode all-the-icons-dired aggressive-indent ag adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell 2048-game))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(evil-goggles-delete-face ((t (:inherit diff-removed))))
- '(evil-goggles-paste-face ((t (:inherit diff-added))))
- '(evil-goggles-undo-redo-add-face ((t (:inherit diff-added))))
- '(evil-goggles-undo-redo-change-face ((t (:inherit diff-changed))))
- '(evil-goggles-undo-redo-remove-face ((t (:inherit diff-removed))))
- '(evil-goggles-yank-face ((t (:inherit diff-changed)))))
