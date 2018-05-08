@@ -41,11 +41,7 @@ values."
                       version-control-diff-side 'left)
      git
      github
-     shell
-     gtags
-     pandoc
      python
-     scala
      (c-c++ :variables
             c-c++-default-mode-for-headers 'c++-mode
             c-c++-enable-clang-support t)
@@ -56,7 +52,6 @@ values."
      (clojure :variables clojure-enable-fancify-symbols t)
      emacs-lisp
      yaml
-     ipython-notebook
      latex
      sql
      vimscript
@@ -69,19 +64,8 @@ values."
      semantic
      syntax-checking
      org
-     ibuffer
-     spacemacs-layouts
-     speed-reading
      (markdown :variables markdown-live-preview-engine 'vmd)
-     games
      puppet
-     mu4e
-     spacemacs-layouts
-     theming
-     typography
-     command-log
-     ztree
-     other
      )
    ;; List of additional packages that will be installed without being
    ;; wrapped in a layer. If you need some configuration for these
@@ -89,25 +73,18 @@ values."
    ;; configuration in `dotspacemacs/user-config'.
    dotspacemacs-additional-packages
    '(
-     rtags
-     company-rtags
-     flycheck-rtags
-     wgrep
      groovy-mode
      ag
      ob-ipython
      all-the-icons-dired
      log4j-mode
-     fireplace
      csv-mode
-     thrift
      vlf
      es-mode
      ob-http
      decide
      evil-goggles
      all-the-icons
-     parinfer
      ob-async
      dockerfile-mode
      format-sql
@@ -429,12 +406,10 @@ you should place your code here."
             regexp-search-ring))
 
     ;; Configure additional packages
-    (use-package wgrep)
     (use-package groovy-mode)
     (use-package ag)
     (use-package vlf
       :config (require 'vlf-setup))
-    (use-package es-mode)
     (use-package decide)
 
     ;; Undo-Tree
@@ -472,13 +447,6 @@ you should place your code here."
     (setq org-confirm-babel-evaluate nil)
        ;; display/update images in the buffer after I evaluate
     (add-hook 'org-babel-after-execute-hook 'org-display-inline-images 'append)
-
-    (setq org-src-fontify-natively t)
-    (add-to-list 'org-latex-packages-alist '("" "minted")) ;; Add minted to the defaults packages to include when exporting.
-    (setq org-latex-listings 'minted)  ;; Tell the latex export to use the minted package for source code coloration.
-    (setq org-latex-pdf-process ;; Let the exporter use the -shell-escape option to let latex execute external programs.
-          '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
-
     ;; org-capture
     (evil-leader/set-key "ooc" 'org-capture)
     (setq org-directory "~/org")
@@ -499,13 +467,6 @@ you should place your code here."
     (evil-leader/set-key "ong" 'pop-global-mark)
     (evil-leader/set-key "onu" 'push-mark-command)
     (setq global-mark-ring-max 128)
-
-    ;; highlighting
-    (evil-leader/set-key "ohs" 'hlt-highlight-symbol)
-    (evil-leader/set-key "ohc" 'hlt-unhighlight-all-prop)
-
-    ;; fireplace
-    (evil-leader/set-key "ofr" 'fireplace)
 
     ;; fonts
     (use-package all-the-icons)
@@ -529,10 +490,6 @@ you should place your code here."
     ;; evil
     (setq evil-goggles-duration 0.08)
     (evil-goggles-use-diff-faces)
-
-    ;; indent guide
-    (setq indent-guide-recursive t
-          indent-guide-char "┊")
 
     ;; dired
     ;; try and guess target directory based on presence of other dired buffer
@@ -563,22 +520,6 @@ you should place your code here."
       (let ((face (or (get-char-property (point) 'read-face-name)
                       (get-char-property (point) 'face))))
         (if face (message "Face: %s" face) (message "No face at %d" pos))))
-
-    ;; ztree
-    (evil-leader/set-key "ozt" 'ztree-dir)
-    (evil-leader/set-key "ozd" 'ztree-diff)
-
-    ;; java
-    (setq eclim-eclipse-dirs  "/usr/lib/eclipse"
-          eclim-executable    "/home/andrewa/.eclipse/org.eclipse.platform_4.6.3_155965261_linux_gtk_x86_64/plugins/org.eclim_2.6.0/bin/eclim")
-
-    ;; scala
-    (setq flycheck-scalastyle-jar "usr/bin/scalastyle")
-    (setq-default dotspacemacs-configuration-layers '(
-                                                      (scala :variables scala-enable-eldoc t)
-                                                      (scala :variables scala-auto-insert-asterisk-in-comments t)
-                                                      (scala :variables scala-auto-start-ensime)))
-
 
     ;; clojure
     (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
