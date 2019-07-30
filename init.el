@@ -475,20 +475,6 @@ configuration.
 It is mostly for variables that should be set before packages are loaded.
 If you are unsure, try setting them in `dotspacemacs/user-config' first."
   (add-to-list 'custom-theme-load-path "~/.spacemacs.d/themes")
-  (spacemacs/toggle-hungry-delete-on)
-  (spacemacs/toggle-centered-point-globally-on)
-  (spacemacs/toggle-automatic-symbol-highlight-on)
-  (spacemacs/toggle-highlight-indentation-on)
-  (spacemacs/toggle-syntax-checking-on)
-  (spacemacs/toggle-smartparens-globally-on)
-  (spacemacs/toggle-camel-case-motion-globally-on)
-  (global-auto-complete-mode 0)
-  (global-company-mode 1)
-  (evil-goggles-mode 1)
-
-  ;; evil
-  (setq evil-goggles-duration 0.08)
-  (evil-goggles-use-diff-faces)
 
   ;; no dialog boxes
   (setq use-dialog-box nil)
@@ -507,6 +493,21 @@ This function is called at the very end of Spacemacs startup, after layer
 configuration.
 Put your configuration code here, except for variables that should be set
 before packages are loaded."
+
+  (spacemacs/toggle-hungry-delete-on)
+  (spacemacs/toggle-centered-point-globally-on)
+  (spacemacs/toggle-automatic-symbol-highlight-on)
+  (spacemacs/toggle-highlight-indentation-on)
+  (spacemacs/toggle-syntax-checking-on)
+  (spacemacs/toggle-smartparens-globally-on)
+  (spacemacs/toggle-camel-case-motion-globally-on)
+  (global-auto-complete-mode 0)
+  (global-company-mode 1)
+  (evil-goggles-mode 1)
+
+  ;; evil
+  (setq evil-goggles-duration 0.08)
+  (evil-goggles-use-diff-faces)
 
 
   ;; xml
