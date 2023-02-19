@@ -46,6 +46,7 @@ This function should only modify configuration layer settings."
      emacs-lisp
      git
      helm
+     (shell :variables shell-default-shell 'vterm)
      fasd
      helm
      yaml
@@ -60,10 +61,6 @@ This function should only modify configuration layer settings."
      markdown
      multiple-cursors
      org
-     ;; (shell :variables
-     ;;        shell-default-height 30
-     ;;        shell-default-position 'bottom)
-     ;; spell-checking
      syntax-checking
      version-control
      treemacs)
@@ -588,6 +585,13 @@ Put your configuration code here, except for variables that should be set
 before packages are loaded."
 
   (global-set-key (kbd "<backtab>") 'company-complete)
+  (push (list "find-file-below"
+              (lambda (path)
+                (if-let* ((buf (find-file-noselect path))
+                          (window (display-buffer-below-selected buf nil)))
+                    (select-window window)
+                  (message "Failed to open file: %s" path))))
+        vterm-eval-cmds)
 )
 
 
